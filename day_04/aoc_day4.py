@@ -1,4 +1,4 @@
-with open('test.txt') as f:
+with open('input.txt') as f:
     contents = f.readlines()
 
 contents = [c.strip() for c in contents]
@@ -6,92 +6,46 @@ contents = [c.strip() for c in contents]
 maxCol = len(contents[0])-1
 maxRow = len(contents)-1
 
-print(maxCol)
-print(maxRow)
+# PART 1
+
+# get all combinations of the coordinates in the grid
+combinations = [(x, y) for x in range(maxRow+1) for y in range(maxRow+1)]
 
 
-def check_direction(contents, direction, current, rowIndex, colIndex):
+def return_letter(contents, x, y):
+
+    # direction in up, down, left, right, topleft, topright, bottomleft, bottomright
+    rowDirection = [-1, 1, 0, 0, -1, -1, 1, 1]
+    colDirection = [0, 0, -1, 1, -1, 1, -1, 1]
 
     maxCol = len(contents[0])-1
     maxRow = len(contents)-1
 
-    def check_next(current):
-        if current == "X":
-            return "M"
-        elif current == "M":
-            return "A"
-        elif current == "A":
-            return "S"
-        else:
-            return "End"
+    all_words = []
+    # go through all eight directions, and form the 4-letter word whenever possible (not out-of-bound)
+    for coord in zip(rowDirection, colDirection):
+        # store the current letter
+        word = contents[x][y]
 
-    if direction == "up":
-        coord = (rowIndex-1, colIndex)
-    elif direction == "down":
-        coord = (rowIndex+1, colIndex)
-    elif direction == "left":
-        coord = (rowIndex, colIndex-1)
-    elif direction == "right":
-        coord = (rowIndex, colIndex+1)
-    elif direction == "topleft":
-        coord = (rowIndex-1, colIndex-1)
-    elif direction == "topright":
-        coord = (rowIndex-1, colIndex+1)
-    elif direction == "btmleft":
-        coord = (rowIndex+1, colIndex-1)
-    elif direction == "btmright":
-        coord = (rowIndex+1, colIndex+1)
+        exit = False
+        for i in range(1, 4):
+            # check whether out-of-bound
+            if i*coord[0]+x >= 0 and i*coord[0]+x <= maxRow and i*coord[1]+y >= 0 and i*coord[1]+y <= maxCol:
+                word += contents[i*coord[0]+x][i*coord[1]+y]
+            else:
+                exit = True  # if out-of-bound, then exit loop
+                break
+            if exit:
+                break
+        all_words.append(word)
 
-    if coord[0] >= 0 and coord[0] <= maxRow and coord[1] >= 0 and coord[1] <= maxCol:
-        if contents[coord[0]][coord[1]] != check_next(current):
-            return coord
-        else:
-            return False
+    return all_words
 
 
-combinations = [(x, y) for x in range(maxRow+1) for y in range(maxRow+1)]
+four_letters_list = []
 
-for coord in combinations:
-    rowIndex = coord[0]
-    colIndex = coord[1]
+for c in combinations:
+    four_letters_list += return_letter(contents, c[0], c[1])
 
-    current = contents[rowIndex][colIndex]
-
-    if rowIndex == 0 and colIndex == 0:
-        # check right, btmright, down
-        coord = check_direction(contents, "right", current, rowIndex, colIndex)
-        if coord:
-            contents[coord[0]] = contents[coord[0]][:coord[1]] + "." + \
-                contents[coord[0]][coord[1]+1:]
-
-        coord = check_direction(contents, "btmright",
-                                current, rowIndex, colIndex)
-        if coord:
-            contents[coord[0]] = contents[coord[0]][:coord[1]] + "." + \
-                contents[coord[0]][coord[1]+1:]
-
-        coord = check_direction(contents, "down", current, rowIndex, colIndex)
-        if coord:
-            contents[coord[0]] = contents[coord[0]][:coord[1]] + "." + \
-                contents[coord[0]][coord[1]+1:]
-
-    elif rowIndex == 0 and colIndex == maxCol:
-        # check left, btmleft, down
-        coord = check_direction(contents, "left", current, rowIndex, colIndex)
-        if coord:
-            contents[coord[0]] = contents[coord[0]][:coord[1]] + "." + \
-                contents[coord[0]][coord[1]+1:]
-
-        coord = check_direction(contents, "btmleft",
-                                current, rowIndex, colIndex)
-        if coord:
-            contents[coord[0]] = contents[coord[0]][:coord[1]] + "." + \
-                contents[coord[0]][coord[1]+1:]
-
-        coord = check_direction(contents, "down", current, rowIndex, colIndex)
-        if coord:
-            contents[coord[0]] = contents[coord[0]][:coord[1]] + "." + \
-                contents[coord[0]][coord[1]+1:]
-
-for c in contents:
-    print(c)
+# check how many are valid "XMAS"
+print(four_letters_list.count("XMAS"))
