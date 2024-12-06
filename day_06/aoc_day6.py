@@ -122,8 +122,6 @@ dot = 0
 replacement_x = [c[0] for c in path_x]
 replacement_x = list(set(replacement_x))
 
-for c in contents:
-    print(c)
 for idx, c in enumerate(replacement_x):
     # print("Executing...")
     # print(c[0])
