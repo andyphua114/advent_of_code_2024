@@ -75,7 +75,6 @@ def trace_path(direction, position, contents):
                     direction = "<"
                 else:
                     direction = "^"
-                path_x.append([position, direction])
                 # print(direction)
                 break
 
@@ -117,16 +116,26 @@ path_x.append([(original_position), "^"])
 direction = "^"
 
 total = 0
+unknown = 0
+dot = 0
 
-for x in path_x[18:19]:
-    coord_x, coord_y = x[0]
-    new_map = contents.copy()
-    new_map[coord_x] = new_map[coord_x][:coord_y] + \
-        "#" + new_map[coord_x][coord_y+1:]
+replacement_x = [c[0] for c in path_x]
+replacement_x = list(set(replacement_x))
 
+for c in contents:
+    print(c)
+for idx, c in enumerate(replacement_x):
+    # print("Executing...")
+    # print(c[0])
+    print(idx)
+    position = original_position
+    direction = "^"
     new_path_x = []
 
-    oob = False
+    new_map = original.copy()
+    new_map[c[0]] = new_map[c[0]][:c[1]] + "#" + new_map[c[0]][c[1]+1:]
+    # for m in new_map:
+    #     print(m)
 
     maxCol = len(contents[0])-1
     maxRow = len(contents)-1
@@ -140,30 +149,49 @@ for x in path_x[18:19]:
     # up, down, left, right
     path = {"^": (-1, 0), "v": (1, 0), "<": (0, -1), ">": (0, 1)}
 
+    oob = False
+
     while not oob:
-        for i in range(1, limit):
+        for i in range(1, limit+1):
+
             # depending on the direction, set the whole straight path as "X" until...
-            x = original_position[0]+path[direction][0]*i
-            y = original_position[1]+path[direction][1]*i
+            x = position[0]+path[direction][0]*i
+            y = position[1]+path[direction][1]*i
+            # print(x)
+            # print(y)
 
             # never hit obstacle "#"
-            if x >= 0 and x <= maxRow and y >= 0 and y <= maxCol and contents[x][y] != "#":
-                if contents[x][y] != "X" or (contents[x][y] == "X" and [(original_position), direction] not in path_x):
+            if x >= 0 and x <= maxRow and y >= 0 and y <= maxCol and new_map[x][y] != "#":
+                if contents[x][y] == "X" and [(x, y), direction] not in new_path_x:
+                    new_path_x.append([(x, y), direction])
+                    # print("Continue")
+                elif [(x, y), direction] in new_path_x:
+                    # print("SUCCEED")
+                    # print(c[0])
+                    # print("----------------------")
+                    total += 1
+                    oob = True
+                elif contents[x][y] == ".":
+                    # print((x, y))
+                    # print(direction)
+                    # print([(x, y), direction])
+                    # print(new_path_x)
+                    # print("Got into . path")
+                    dot += 1
+                    oob = True
                     flag = "fail"
-                    oob = True
-                    break
-                elif [(x, y), direction] not in new_path_x:
-                    new_path_x.append([(original_position), direction])
                 else:
-                    flag = "succeed"
+                    print(idx)
+                    unknown += 1
                     oob = True
-                    break
+                    flag = "fail"
 
             # hit obstacle "#"
-            elif x >= 0 and x <= maxRow and y >= 0 and y <= maxCol and contents[x][y] == "#":
+            elif x >= 0 and x <= maxRow and y >= 0 and y <= maxCol and new_map[x][y] == "#":
 
-                original_position = (
-                    x-path[direction][0], y-path[direction][1])
+                # print("HIT #")
+                position = (x-path[direction][0], y-path[direction][1])
+                # print(position)
 
                 if direction == "^":
                     direction = ">"
@@ -173,21 +201,18 @@ for x in path_x[18:19]:
                     direction = "<"
                 else:
                     direction = "^"
-
                 # print(direction)
                 break
 
             # or if go out-of-bound
             elif x < 0 or x > maxRow or y < 0 or y > maxCol:
-                original_position = (
-                    x-path[direction][0], y-path[direction][1])
-                flag = "fail"
+                position = (x-path[direction][0], y-path[direction][1])
+                # print("OOB")
                 oob = True
 
             if oob:
                 break
 
-    if flag == "succeed":
-        total += 1
-
 print(total)
+print(unknown)
+print(dot)
